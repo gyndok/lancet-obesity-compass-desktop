@@ -21,7 +21,7 @@ export function SavedVisitsList() {
       </div>
 
       <Input
-        placeholder="Search by patient name..."
+        placeholder="Search by patient number..."
         value={query}
         onChange={(e) => handleSearch(e.target.value)}
       />

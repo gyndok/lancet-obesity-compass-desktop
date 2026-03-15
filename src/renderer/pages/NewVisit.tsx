@@ -251,16 +251,16 @@ export default function NewVisit() {
                   Patient Information
                 </CardTitle>
                 <CardDescription>
-                  Enter an optional label for this visit (e.g., patient initials or chart number).
+                  Enter a patient number for this visit.
                   No PHI is stored -- this is for your reference only.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="patient-label">Patient Label (optional)</Label>
+                  <Label htmlFor="patient-label">Patient Number (optional)</Label>
                   <Input
                     id="patient-label"
-                    placeholder="e.g., J.D. or #12345"
+                    placeholder="e.g., 12345"
                     value={patientLabel}
                     onChange={(e) => setPatientLabel(e.target.value)}
                     onKeyDown={(e) => {
