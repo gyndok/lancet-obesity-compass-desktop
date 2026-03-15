@@ -38,7 +38,17 @@ export default function NewVisit() {
   const [isSaving, setIsSaving] = useState(false);
 
   const questions = initialVisitQuestions;
-  const _sections = getUniqueSections(questions);
+  const sections = getUniqueSections(questions);
+
+  // Group questions by section for multi-question pages
+  const questionsBySection = sections.map(section => ({
+    section,
+    questions: questions.filter(q => q.section === section),
+  }));
+
+  // Track current section index (replaces per-question index for navigation)
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const currentSectionGroup = questionsBySection[currentSectionIndex];
 
   const handleNext = () => {
     if (state.isPaused) {
@@ -46,14 +56,18 @@ export default function NewVisit() {
     }
 
     if (phase === 'label') {
-      // Start the interview timer
       setVisitType('initial');
       setPhase('bmi');
     } else if (phase === 'bmi') {
+      setCurrentSectionIndex(0);
       setPhase('questions');
     } else if (phase === 'questions') {
-      if (state.currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(state.currentQuestionIndex + 1);
+      if (currentSectionIndex < questionsBySection.length - 1) {
+        setCurrentSectionIndex(currentSectionIndex + 1);
+        // Update the question index to the first question of the next section
+        const nextSection = questionsBySection[currentSectionIndex + 1];
+        const qIdx = questions.findIndex(q => q.id === nextSection.questions[0].id);
+        setCurrentQuestionIndex(qIdx);
       } else {
         setComplete(true);
         setPhase('summary');
@@ -63,10 +77,11 @@ export default function NewVisit() {
 
   const handleBack = () => {
     if (phase === 'summary') {
+      setCurrentSectionIndex(questionsBySection.length - 1);
       setPhase('questions');
     } else if (phase === 'questions') {
-      if (state.currentQuestionIndex > 0) {
-        setCurrentQuestionIndex(state.currentQuestionIndex - 1);
+      if (currentSectionIndex > 0) {
+        setCurrentSectionIndex(currentSectionIndex - 1);
       } else {
         setPhase('bmi');
       }
@@ -147,15 +162,10 @@ export default function NewVisit() {
     }
   };
 
-  const currentQuestion = questions[state.currentQuestionIndex];
-  const currentResponse = currentQuestion ? getResponse(currentQuestion.id) : undefined;
-
-  // Keyboard navigation: Arrow keys + Enter
+  // Keyboard navigation: Arrow keys for section nav (not in inputs)
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    // Don't capture when typing in an input/textarea
     const tag = (e.target as HTMLElement)?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') {
-      // Allow Enter in label phase input to advance
       if (e.key === 'Enter' && phase === 'label') {
         e.preventDefault();
         handleNext();
@@ -163,14 +173,14 @@ export default function NewVisit() {
       return;
     }
 
-    if (e.key === 'ArrowRight' || e.key === 'Enter') {
+    if (e.key === 'ArrowRight') {
       e.preventDefault();
       handleNext();
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       handleBack();
     }
-  }, [phase, state.currentQuestionIndex, state.isPaused]);
+  }, [phase, currentSectionIndex]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -221,12 +231,12 @@ export default function NewVisit() {
         )}
 
         {/* Progress */}
-        {phase === 'questions' && currentQuestion && (
+        {phase === 'questions' && currentSectionGroup && (
           <div className="mb-6">
             <ProgressIndicator
-              currentIndex={state.currentQuestionIndex}
-              totalQuestions={questions.length}
-              sectionName={currentQuestion.section}
+              currentIndex={currentSectionIndex}
+              totalQuestions={questionsBySection.length}
+              sectionName={currentSectionGroup.section}
             />
           </div>
         )}
@@ -293,41 +303,51 @@ export default function NewVisit() {
           </div>
         )}
 
-        {/* Questions Phase */}
-        {phase === 'questions' && currentQuestion && (
+        {/* Questions Phase — grouped by section */}
+        {phase === 'questions' && currentSectionGroup && (
           <div className="space-y-6">
             <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-6">
-                  <div>
-                    <span className="text-xs uppercase tracking-wide text-primary font-medium">
-                      {currentQuestion.section}
-                    </span>
-                    <h2 className="text-xl font-semibold mt-2">
-                      {currentQuestion.question}
-                    </h2>
-                    {currentQuestion.description && (
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {currentQuestion.description}
-                      </p>
-                    )}
-                  </div>
-                  <QuestionForm
-                    question={currentQuestion}
-                    currentResponse={currentResponse}
-                    onAnswer={(answer) => setResponse(currentQuestion.id, answer)}
-                  />
-                </div>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <span className="text-xs uppercase tracking-wide text-primary font-medium bg-primary/10 px-2 py-1 rounded">
+                    Section {currentSectionIndex + 1} of {questionsBySection.length}
+                  </span>
+                  <span>{currentSectionGroup.section}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-8">
+                {currentSectionGroup.questions.map((q, idx) => {
+                  const resp = getResponse(q.id);
+                  return (
+                    <div key={q.id} className={idx > 0 ? 'border-t pt-6' : ''}>
+                      <div className="mb-3">
+                        <h3 className="text-base font-semibold">
+                          {q.question}
+                        </h3>
+                        {q.description && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {q.description}
+                          </p>
+                        )}
+                      </div>
+                      <QuestionForm
+                        question={q}
+                        currentResponse={resp}
+                        onAnswer={(answer) => setResponse(q.id, answer)}
+                      />
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
+                {currentSectionIndex === 0 ? 'Back to BMI' : 'Previous Section'}
               </Button>
               <Button onClick={handleNext}>
-                {state.currentQuestionIndex === questions.length - 1 ? 'Complete' : 'Next'}
+                {currentSectionIndex === questionsBySection.length - 1 ? 'Complete' : 'Next Section'}
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
