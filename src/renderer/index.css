@@ -1,9 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Clinical Obesity Diagnostic App Design System */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
 
 @layer base {
   :root {
@@ -172,4 +169,13 @@
   .result-no-obesity {
     @apply bg-green-50 border-l-green-500 text-green-900;
   }
+}
+
+/* Electron window drag region */
+.app-drag-region {
+  -webkit-app-region: drag;
+}
+.app-drag-region button,
+.app-drag-region a {
+  -webkit-app-region: no-drag;
 }
