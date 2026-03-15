@@ -20,6 +20,7 @@ const createWindow = (): void => {
     height: 800,
     minWidth: 900,
     minHeight: 600,
+    show: false,
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 16, y: 16 },
     webPreferences: {
@@ -36,6 +37,11 @@ const createWindow = (): void => {
       path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
     );
   }
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow?.show();
+    mainWindow?.focus();
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
