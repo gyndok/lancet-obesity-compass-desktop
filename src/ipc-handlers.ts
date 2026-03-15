@@ -29,14 +29,14 @@ export function registerIpcHandlers(): void {
 
   const selectAllVisits = db.prepare(`
     SELECT id, patient_label, created_at, bmi,
-      json_extract(assessment, '$.classification') as classification,
+      COALESCE(json_extract(assessment, '$.result.classification'), json_extract(assessment, '$.classification')) as classification,
       elapsed_time
     FROM visits WHERE is_draft = 0 ORDER BY created_at DESC
   `);
 
   const searchVisits = db.prepare(`
     SELECT id, patient_label, created_at, bmi,
-      json_extract(assessment, '$.classification') as classification,
+      COALESCE(json_extract(assessment, '$.result.classification'), json_extract(assessment, '$.classification')) as classification,
       elapsed_time
     FROM visits WHERE is_draft = 0 AND patient_label LIKE ? ORDER BY created_at DESC
   `);

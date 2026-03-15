@@ -72,9 +72,12 @@ export default function Assessment() {
       };
 
       // Anthropometrics from visit measurements
-      const heightInches = visit.height_feet != null && visit.height_inches != null
-        ? (visit.height_feet * 12) + visit.height_inches
-        : undefined;
+      // Treat null height_inches as 0 when height_feet is present
+      const heightInches = visit.height_feet != null
+        ? (visit.height_feet * 12) + (visit.height_inches ?? 0)
+        : visit.height_inches != null
+          ? visit.height_inches
+          : undefined;
 
       const ageResponse = responses.find(r => r.questionId === 1);
       const sexResponse = responses.find(r => r.questionId === 2);

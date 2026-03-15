@@ -111,7 +111,7 @@ export default function NewVisit() {
       const result = await window.electronAPI.createVisit({
         patient_label: patientLabel || undefined,
         height_feet: state.bmiData.heightInFeet ?? undefined,
-        height_inches: state.bmiData.heightInInches ?? undefined,
+        height_inches: state.bmiData.heightInFeet != null ? (state.bmiData.heightInInches ?? 0) : (state.bmiData.heightInInches ?? undefined),
         weight_lbs: state.bmiData.weight ?? undefined,
         bmi,
         responses: JSON.stringify(state.responses),
@@ -144,7 +144,7 @@ export default function NewVisit() {
       const result = await window.electronAPI.createVisit({
         patient_label: patientLabel || undefined,
         height_feet: state.bmiData.heightInFeet ?? undefined,
-        height_inches: state.bmiData.heightInInches ?? undefined,
+        height_inches: state.bmiData.heightInFeet != null ? (state.bmiData.heightInInches ?? 0) : (state.bmiData.heightInInches ?? undefined),
         weight_lbs: state.bmiData.weight ?? undefined,
         bmi,
         responses: JSON.stringify(state.responses),
