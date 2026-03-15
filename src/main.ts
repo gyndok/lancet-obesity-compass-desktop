@@ -1,6 +1,8 @@
 import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+import { initDatabase, closeDatabase } from './database';
+import { registerIpcHandlers } from './ipc-handlers';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -40,7 +42,15 @@ const createWindow = (): void => {
   });
 };
 
-app.on('ready', createWindow);
+app.on('ready', () => {
+  initDatabase();
+  registerIpcHandlers();
+  createWindow();
+});
+
+app.on('before-quit', () => {
+  closeDatabase();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
