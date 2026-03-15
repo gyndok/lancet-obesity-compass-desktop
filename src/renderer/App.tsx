@@ -4,14 +4,8 @@ import { ThemeProvider } from '@/lib/theme-provider';
 import { AppLayout } from '@/components/layout/AppLayout';
 import SavedVisits from '@/pages/SavedVisits';
 import VisitDetailPage from '@/pages/VisitDetail';
-
-// Placeholder pages for features not yet implemented
-function NewVisit() {
-  return <div className="p-6"><h1 className="text-2xl font-bold">New Visit</h1><p className="text-muted-foreground mt-2">Interview flow coming soon.</p></div>;
-}
-function Assessment() {
-  return <div className="p-6"><h1 className="text-2xl font-bold">Assessment Tool</h1><p className="text-muted-foreground mt-2">Diagnostic assessment coming soon.</p></div>;
-}
+import NewVisit from '@/pages/NewVisit';
+import Assessment from '@/pages/Assessment';
 
 export default function App() {
   return (
