@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Menu } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { initDatabase, closeDatabase } from './database';
@@ -42,10 +42,90 @@ const createWindow = (): void => {
   });
 };
 
+const buildApplicationMenu = (): void => {
+  const template: Electron.MenuItemConstructorOptions[] = [
+    {
+      label: app.name,
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' },
+      ],
+    },
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'New Visit',
+          accelerator: 'CmdOrCtrl+N',
+          click: () => mainWindow?.webContents.send('navigate', '/new-visit'),
+        },
+        {
+          label: 'Search Visits',
+          accelerator: 'CmdOrCtrl+F',
+          click: () => mainWindow?.webContents.send('navigate', '/saved-visits'),
+        },
+        { type: 'separator' },
+        { role: 'close' },
+      ],
+    },
+    {
+      label: 'Visit',
+      submenu: [
+        {
+          label: 'Copy Full Summary',
+          accelerator: 'CmdOrCtrl+Shift+C',
+          click: () => mainWindow?.webContents.send('shortcut', 'copy-summary'),
+        },
+        {
+          label: 'Edit Visit',
+          accelerator: 'CmdOrCtrl+E',
+          click: () => mainWindow?.webContents.send('shortcut', 'edit-visit'),
+        },
+        { type: 'separator' },
+        {
+          label: 'Delete Visit',
+          accelerator: 'CmdOrCtrl+Backspace',
+          click: () => mainWindow?.webContents.send('shortcut', 'delete-visit'),
+        },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectAll' },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' },
+      ],
+    },
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+};
+
 app.on('ready', () => {
   initDatabase();
   registerIpcHandlers();
   createWindow();
+  buildApplicationMenu();
 });
 
 app.on('before-quit', () => {
