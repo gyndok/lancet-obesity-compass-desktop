@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -149,6 +149,33 @@ export default function NewVisit() {
 
   const currentQuestion = questions[state.currentQuestionIndex];
   const currentResponse = currentQuestion ? getResponse(currentQuestion.id) : undefined;
+
+  // Keyboard navigation: Arrow keys + Enter
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    // Don't capture when typing in an input/textarea
+    const tag = (e.target as HTMLElement)?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') {
+      // Allow Enter in label phase input to advance
+      if (e.key === 'Enter' && phase === 'label') {
+        e.preventDefault();
+        handleNext();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowRight' || e.key === 'Enter') {
+      e.preventDefault();
+      handleNext();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      handleBack();
+    }
+  }, [phase, state.currentQuestionIndex, state.isPaused]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
